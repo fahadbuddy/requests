@@ -1,19 +1,14 @@
 #!/usr/bin/env python
 
-"""
-distutils/setuptools install script. See inline comments for packaging documentation.
-"""
-
 import os
 import sys
 
 import requests
-from requests.compat import is_py3
+
+from codecs import open
 
 try:
     from setuptools import setup
-    # hush pyflakes
-    setup
 except ImportError:
     from distutils.core import setup
 
@@ -24,53 +19,50 @@ if sys.argv[-1] == 'publish':
 packages = [
     'requests',
     'requests.packages',
+    'requests.packages.chardet',
     'requests.packages.urllib3',
     'requests.packages.urllib3.packages',
+    'requests.packages.urllib3.contrib',
+    'requests.packages.urllib3.util',
     'requests.packages.urllib3.packages.ssl_match_hostname',
-    'requests.packages.urllib3.packages.mimetools_choose_boundary',
 ]
 
-# certifi is a Python package containing a CA certificate bundle for SSL verification.
-# On certain supported platforms (e.g., Red Hat / Debian / FreeBSD), Requests can
-# use the system CA bundle instead; see `requests.utils` for details.
-# If your platform is supported, set `requires` to [] instead:
-requires = ['certifi>=0.0.7']
+requires = []
 
-# chardet is used to optimally guess the encodings of pages that don't declare one.
-# At this time, chardet is not a required dependency. However, it's sufficiently
-# important that pip/setuptools should install it when it's unavailable.
-if is_py3:
-    chardet_package = 'chardet2'
-else:
-    chardet_package = 'chardet>=1.0.0'
-    requires.append('oauthlib>=0.1.0,<0.2.0')
-
-requires.append(chardet_package)
+with open('README.rst', 'r', 'utf-8') as f:
+    readme = f.read()
+with open('HISTORY.rst', 'r', 'utf-8') as f:
+    history = f.read()
 
 setup(
     name='requests',
     version=requests.__version__,
     description='Python HTTP for Humans.',
-    long_description=open('README.rst').read() + '\n\n' +
-                     open('HISTORY.rst').read(),
+    long_description=readme + '\n\n' + history,
     author='Kenneth Reitz',
     author_email='me@kennethreitz.com',
     url='http://python-requests.org',
     packages=packages,
-    package_data={'': ['LICENSE', 'NOTICE']},
+    package_data={'': ['LICENSE', 'NOTICE'], 'requests': ['*.pem']},
+    package_dir={'requests': 'requests'},
     include_package_data=True,
     install_requires=requires,
-    license=open("LICENSE").read(),
+    license='Apache 2.0',
+    zip_safe=False,
     classifiers=(
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Natural Language :: English',
-        'License :: OSI Approved :: ISC License (ISCL)',
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.0',
-        'Programming Language :: Python :: 3.1',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4'
+
     ),
+    extras_require={
+        'security': ['pyOpenSSL', 'ndg-httpsclient', 'pyasn1'],
+    },
 )
